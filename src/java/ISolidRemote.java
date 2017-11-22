@@ -7,5 +7,5 @@ import javax.ejb.Remote;
 @Remote
 public interface ISolidRemote
 {
-    public String Hello();
+    public double CalculateConvexHull(double[][] data);
 }

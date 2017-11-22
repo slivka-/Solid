@@ -1,12 +1,22 @@
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Enumeration;
 import javax.ejb.EJB;
+import javax.sql.DataSource;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import pl.jrj.dsm.IDSManagerRemote;
+
 
 /**
  * @author Michał Śliwa
@@ -15,11 +25,13 @@ import pl.jrj.dsm.IDSManagerRemote;
 public class Solver extends HttpServlet
 {
     private static final long serialVersionUID = 5674342757569182632L;
+    //deployment descriptor form data source provider
+    private final String dsDeploymentDescriptor = "java:global/ejb-project/DSManager!pl.jrj.dsm.IDSManagerRemote";
+    //data source query
+    private final String dbQuery = "SELECT * FROM %s";
     
-    //@EJB(mappedName = "IDSManagerRemote")
-    //private IDSManagerRemote dsManagerBean;
-    
-    @EJB(mappedName = "ISolidRemote")
+    //EJB bean providing calculation functions
+    @EJB
     private ISolidRemote solidBean;
     
     /**
@@ -35,9 +47,64 @@ public class Solver extends HttpServlet
             throws ServletException, IOException
     {
         response.setContentType("text/html;charset=UTF-8");
+        String dbTabName = "";
+        //check url parameters for tableName
+        Enumeration<String> paramNames = request.getParameterNames();
+        while (paramNames.hasMoreElements())
+        {
+            dbTabName = request.getParameter(paramNames.nextElement());
+            break;
+        }
         try (PrintWriter out = response.getWriter())
         {
-            out.println(solidBean.Hello());
+            //check if table name exist
+            if(!dbTabName.equalsIgnoreCase(""))
+            {
+                try
+                {
+                    //declare data table
+                    double[][] data = null;
+                    //lookup DSManager EJB
+                    Context ctx = new InitialContext();
+                    IDSManagerRemote dsManager = (IDSManagerRemote)ctx.lookup(dsDeploymentDescriptor);
+                    //get data source using info provided by DSManager EJB
+                    DataSource source = (DataSource)ctx.lookup(dsManager.getDS());
+                    //connect to data source
+                    try(Connection c = source.getConnection())
+                    {
+                        //create sql statement
+                        try(Statement s = c.createStatement())
+                        {
+                            //execute query
+                            ResultSet result = s.executeQuery(String.format(dbQuery, dbTabName));
+                            //move to last record in result set
+                            if(result.last())
+                            {
+                                //initialize data table using last row number
+                                data = new double[result.getRow()][2];
+                                //move to beggining of result set
+                                result.beforeFirst();
+                                int i = 0;
+                                while(result.next())
+                                {
+                                    //write data from result set to data table
+                                    data[i++] = new double[]{result.getFloat(2),result.getFloat(4)};
+                                }
+                            }
+                        }
+                    }
+                    //if data table is not null, pass it to bean and print result
+                    if(data != null)
+                        out.println(solidBean.CalculateConvexHull(data));
+                    else
+                        out.println("No data");
+                }
+                catch(NamingException | SQLException ex)
+                {
+                    //print errors
+                    out.println(ex.toString());
+                }
+            }
         }
     }
 

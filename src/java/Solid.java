@@ -7,11 +7,15 @@ import javax.ejb.Stateless;
 @Stateless
 public class Solid implements ISolidRemote
 {
-
     @Override
-    public String Hello()
+    public double CalculateConvexHull(double[][] data)
     {
-        return "Hello World!";
+        double output = 0.0;
+        for (double[] d : data)
+        {
+            output += d[0] + d[1];
+        }
+        return output;
     }
     
 }
