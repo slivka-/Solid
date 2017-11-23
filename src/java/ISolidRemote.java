@@ -1,3 +1,5 @@
+import java.awt.Point;
+import java.util.ArrayList;
 import javax.ejb.Remote;
 
 /**
@@ -7,5 +9,5 @@ import javax.ejb.Remote;
 @Remote
 public interface ISolidRemote
 {
-    public double CalculateConvexHull(double[][] data);
+    public double CalculateConvexHullSurface(ArrayList<Point.Double> data);
 }

@@ -1,9 +1,12 @@
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.ejb.EJB;
 import javax.sql.DataSource;
@@ -63,7 +66,7 @@ public class Solver extends HttpServlet
                 try
                 {
                     //declare data table
-                    double[][] data = null;
+                    ArrayList<Point.Double> data = new ArrayList<>();
                     //lookup DSManager EJB
                     Context ctx = new InitialContext();
                     IDSManagerRemote dsManager = (IDSManagerRemote)ctx.lookup(dsDeploymentDescriptor);
@@ -77,25 +80,16 @@ public class Solver extends HttpServlet
                         {
                             //execute query
                             ResultSet result = s.executeQuery(String.format(dbQuery, dbTabName));
-                            //move to last record in result set
-                            if(result.last())
+                            while(result.next())
                             {
-                                //initialize data table using last row number
-                                data = new double[result.getRow()][2];
-                                //move to beggining of result set
-                                result.beforeFirst();
-                                int i = 0;
-                                while(result.next())
-                                {
-                                    //write data from result set to data table
-                                    data[i++] = new double[]{result.getFloat(2),result.getFloat(4)};
-                                }
+                                //write data from result set to data table
+                                data.add(new Point.Double(result.getFloat(2),result.getFloat(4)));
                             }
                         }
                     }
                     //if data table is not null, pass it to bean and print result
-                    if(data != null)
-                        out.println(solidBean.CalculateConvexHull(data));
+                    if(data.size()>0)
+                        out.println(solidBean.CalculateConvexHullSurface(data));
                     else
                         out.println("No data");
                 }
