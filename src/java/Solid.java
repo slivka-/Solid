@@ -1,9 +1,6 @@
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 import javax.ejb.Stateless;
 
@@ -18,6 +15,13 @@ public class Solid implements ISolidRemote
     public double CalculateConvexHullSurface(ArrayList<Point.Double> data)
     {
         double output = 0.0;
+        ArrayList<Point.Double> convexHull = CalculateConvexHull(data);
+
+        return output;
+    }
+    
+    private ArrayList<Point.Double> CalculateConvexHull(ArrayList<Point.Double> data)
+    {
         PointStack stack = new PointStack();
         ArrayList<Point.Double> sortedData = SortPoints(data);
         
@@ -38,9 +42,7 @@ public class Solid implements ISolidRemote
         {
             convexHull.add(stack.pop());
         }
-        
-
-        return output;
+        return convexHull;
     }
     
     private double CalculateDet(Point.Double p1, Point.Double p2, Point.Double p3)
