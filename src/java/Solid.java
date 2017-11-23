@@ -16,7 +16,15 @@ public class Solid implements ISolidRemote
     {
         double output = 0.0;
         ArrayList<Point.Double> convexHull = CalculateConvexHull(data);
-
+        Point.Double fp = convexHull.get(0);
+        Point.Double f1, f2;
+        for(int i = 2;i<convexHull.size()-1;i++)
+        {
+            f1 = convexHull.get(i-1);
+            f2 = convexHull.get(i);
+            output += Math.abs(((fp.x-f2.x)*(f1.y-fp.y))-((fp.x-f1.x)*(f2.y-fp.y)))/2; 
+        }
+        
         return output;
     }
     
