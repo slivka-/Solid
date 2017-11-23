@@ -89,7 +89,10 @@ public class Solver extends HttpServlet
                     }
                     //if data table is not null, pass it to bean and print result
                     if (data.size()>0)
-                        out.println(solidBean.CalculateConvexHullSurface(data));
+                    {
+                        double surface = solidBean.CalculateConvexHullSurface(data);
+                        out.println(String.format("%f", surface));
+                    }
                     else
                         out.println("No data");
                 }
