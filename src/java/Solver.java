@@ -60,7 +60,7 @@ public class Solver extends HttpServlet
         try (PrintWriter out = response.getWriter())
         {
             //check if table name exist
-            if(!dbTabName.equalsIgnoreCase(""))
+            if (!dbTabName.equalsIgnoreCase(""))
             {
                 try
                 {
@@ -68,18 +68,19 @@ public class Solver extends HttpServlet
                     ArrayList<Point.Double> data = new ArrayList<>();
                     //lookup DSManager EJB
                     Context ctx = new InitialContext();
-                    IDSManagerRemote dsManager = (IDSManagerRemote)ctx.lookup(dsDeploymentDescriptor);
+                    IDSManagerRemote dsManager;
+                    dsManager = (IDSManagerRemote)ctx.lookup(dsDeploymentDescriptor);
                     //get data source using info provided by DSManager EJB
                     DataSource source = (DataSource)ctx.lookup(dsManager.getDS());
                     //connect to data source
-                    try(Connection c = source.getConnection())
+                    try (Connection c = source.getConnection())
                     {
                         //create sql statement
-                        try(Statement s = c.createStatement())
+                        try (Statement s = c.createStatement())
                         {
                             //execute query
                             ResultSet result = s.executeQuery(String.format(dbQuery, dbTabName));
-                            while(result.next())
+                            while (result.next())
                             {
                                 //write data from result set to data table
                                 data.add(new Point.Double(result.getFloat(2),result.getFloat(4)));
@@ -87,12 +88,12 @@ public class Solver extends HttpServlet
                         }
                     }
                     //if data table is not null, pass it to bean and print result
-                    if(data.size()>0)
+                    if (data.size()>0)
                         out.println(solidBean.CalculateConvexHullSurface(data));
                     else
                         out.println("No data");
                 }
-                catch(NamingException | SQLException ex)
+                catch (NamingException | SQLException ex)
                 {
                     //print errors
                     out.println(ex.toString());
