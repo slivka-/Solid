@@ -23,7 +23,7 @@ public class Solid implements ISolidRemote
         double output = 0.0;
         //get convex hull points
         ArrayList<Point.Double> convexHull = CalculateConvexHull(data);
-        Point.Double fp = convexHull.get(convexHull.size());
+        Point.Double fp = convexHull.get(convexHull.size()-1);
         Point.Double f1, f2;
         //divide polygon created from points into triangles
         //and using shoelace formula to calculate surface
